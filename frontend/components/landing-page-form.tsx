@@ -5,9 +5,10 @@ import { Checkbox } from "./ui/checkbox"
 import Link from "next/link"
 import type { Dispatch, SetStateAction } from "react"
 import AirportSelect, { type AirportOption } from "./airport-select"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Calendar } from "./ui/calendar"
+import { format } from "date-fns"
 
 interface LandingPageFormProps {
   tripType: string
@@ -28,6 +29,21 @@ export default function LandingPageForm({ tripType, setTripType, handleSearch }:
   const [passengers, setPassengers] = useState<number>(1)
   const [departureDate, setDepartureDate] = useState<Date | undefined>(undefined)
   const [returnDate, setReturnDate] = useState<Date | undefined>(undefined)
+  const [isDepartureOpen, setIsDepartureOpen] = useState(false)
+  const [isReturnOpen, setIsReturnOpen] = useState(false)
+
+  useEffect(() => {
+    if (tripType !== "round-trip") {
+      setReturnDate(undefined)
+      setIsReturnOpen(false)
+    }
+  }, [tripType])
+
+  const formattedDeparture = departureDate
+    ? format(departureDate, "EEE, MMM d, yyyy")
+    : undefined
+
+  const formattedReturn = returnDate ? format(returnDate, "EEE, MMM d, yyyy") : undefined
 
   const canSearch = Boolean(
     from &&
@@ -89,7 +105,7 @@ export default function LandingPageForm({ tripType, setTripType, handleSearch }:
               {/* Travel dates */}
               <div className="lg:col-span-1">
                 <div className="text-xs text-gray-500 mb-2">DEPARTURE</div>
-                <Popover>
+                <Popover open={isDepartureOpen} onOpenChange={setIsDepartureOpen}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
@@ -97,7 +113,7 @@ export default function LandingPageForm({ tripType, setTripType, handleSearch }:
                     >
                       <CalendarIcon size={16} className="text-gray-400 mr-2" />
                       <span className="text-sm">
-                        {departureDate ? departureDate.toLocaleDateString() : "Select date"}
+                        {formattedDeparture ?? "Select date"}
                       </span>
                     </button>
                   </PopoverTrigger>
@@ -105,7 +121,15 @@ export default function LandingPageForm({ tripType, setTripType, handleSearch }:
                     <Calendar
                       mode="single"
                       selected={departureDate}
-                      onSelect={(date) => setDepartureDate(date)}
+                      onSelect={(date) => {
+                        setDepartureDate(date)
+                        if (date && returnDate && returnDate < date) {
+                          setReturnDate(undefined)
+                        }
+                        if (date) {
+                          setIsDepartureOpen(false)
+                        }
+                      }}
                       disabled={(date) => {
                         const today = new Date();
                         today.setHours(0,0,0,0)
@@ -119,7 +143,7 @@ export default function LandingPageForm({ tripType, setTripType, handleSearch }:
 
               <div className="lg:col-span-1">
                 <div className="text-xs text-gray-500 mb-2">RETURN</div>
-                <Popover>
+                <Popover open={isReturnOpen} onOpenChange={setIsReturnOpen}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
@@ -128,7 +152,9 @@ export default function LandingPageForm({ tripType, setTripType, handleSearch }:
                     >
                       <CalendarIcon size={16} className="text-gray-400 mr-2" />
                       <span className="text-sm">
-                        {returnDate ? returnDate.toLocaleDateString() : tripType === "round-trip" ? "Select date" : "N/A for one-way"}
+                        {tripType !== "round-trip"
+                          ? "N/A for one-way"
+                          : formattedReturn ?? "Select date"}
                       </span>
                     </button>
                   </PopoverTrigger>
@@ -137,7 +163,12 @@ export default function LandingPageForm({ tripType, setTripType, handleSearch }:
                       <Calendar
                         mode="single"
                         selected={returnDate}
-                        onSelect={(date) => setReturnDate(date)}
+                        onSelect={(date) => {
+                          setReturnDate(date)
+                          if (date) {
+                            setIsReturnOpen(false)
+                          }
+                        }}
                         disabled={(date) => {
                           const minDate = departureDate ? new Date(departureDate) : new Date()
                           minDate.setHours(0,0,0,0)
