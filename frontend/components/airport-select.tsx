@@ -94,44 +94,50 @@ export default function AirportSelect({ label, value, onChange, placeholder }: A
 
   return (
     <div className="w-full">
-      <div className="text-xs text-gray-500 mb-1">{label.toUpperCase()}</div>
-      <div className="relative">
-        <input
-          className="w-full border border-gray-200 rounded-lg p-2 text-sm"
-          placeholder={placeholder || "Search airport or city"}
-          value={value ? `${value.city ? value.city + " - " : ""}${value.name} (${value.code})` : query}
-          onChange={(e) => {
-            onChange(null)
-            setQuery(e.target.value)
-            setOpen(true)
-          }}
-          onFocus={() => setOpen(true)}
-        />
-        {open && (options.length > 0 || loading) && (
-          <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md max-h-64 overflow-auto">
-            {loading && <div className="p-3 text-sm text-gray-500">Loading…</div>}
-            {!loading && options.length === 0 && (
-              <div className="p-3 text-sm text-gray-500">No results</div>
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{label}</p>
+      <div className="relative mt-2">
+        <div className="flex items-center rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-slate-300 focus-within:ring-2 focus-within:ring-slate-900/10">
+          <input
+            className="w-full border-0 bg-transparent p-0 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none"
+            placeholder={placeholder || "Search airport or city"}
+            value={value ? `${value.city ? value.city + " — " : ""}${value.name} (${value.code})` : query}
+            onChange={(e) => {
+              onChange(null)
+              setQuery(e.target.value)
+              setOpen(true)
+            }}
+            onFocus={() => setOpen(true)}
+          />
+        </div>
+        {open && (
+          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+            {loading && <div className="px-4 py-3 text-sm text-slate-500">Searching…</div>}
+            {!loading && options.length === 0 && query.length >= 2 && (
+              <div className="px-4 py-3 text-sm text-slate-500">No matching airports</div>
             )}
-            {!loading &&
-              options.map((opt) => (
-                <button
-                  key={opt.code + opt.name}
-                  type="button"
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50"
-                  onClick={() => {
-                    onChange(opt)
-                    setQuery("")
-                    setOpen(false)
-                  }}
-                >
-                  <div className="text-sm font-medium">
-                    {opt.city ? `${opt.city} — ` : ""}
-                    {opt.name} ({opt.code})
-                  </div>
-                  <div className="text-xs text-gray-500">{opt.country}</div>
-                </button>
-              ))}
+            {!loading && options.length > 0 && (
+              <ul className="max-h-60 overflow-auto py-1">
+                {options.map((opt) => (
+                  <li key={opt.code + opt.name}>
+                    <button
+                      type="button"
+                      className="flex w-full flex-col gap-0.5 px-4 py-2 text-left transition hover:bg-slate-50"
+                      onClick={() => {
+                        onChange(opt)
+                        setQuery("")
+                        setOpen(false)
+                      }}
+                    >
+                      <span className="text-sm font-semibold text-slate-900">
+                        {opt.city ? `${opt.city} — ` : ""}
+                        {opt.name} ({opt.code})
+                      </span>
+                      <span className="text-xs text-slate-500">{opt.country}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>

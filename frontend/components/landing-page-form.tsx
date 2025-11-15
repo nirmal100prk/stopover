@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar as CalendarIcon, ChevronDown, Plane } from "lucide-react"
+import { Calendar as CalendarIcon, Check, Minus, Plane, Plus } from "lucide-react"
 import { Checkbox } from "./ui/checkbox"
 import Link from "next/link"
 import type { Dispatch, SetStateAction } from "react"
@@ -22,12 +22,24 @@ interface LandingPageFormProps {
   }) => void
 }
 
+const tripTypeOptions = [
+  { id: "one-way", label: "One way" },
+  { id: "round-trip", label: "Round trip" },
+  { id: "multi-city", label: "Multi city" },
+]
+
 export default function LandingPageForm({ tripType, setTripType, handleSearch }: LandingPageFormProps) {
   const [from, setFrom] = useState<AirportOption | null>(null)
   const [to, setTo] = useState<AirportOption | null>(null)
   const [passengers, setPassengers] = useState<number>(1)
   const [departureDate, setDepartureDate] = useState<Date | undefined>(undefined)
   const [returnDate, setReturnDate] = useState<Date | undefined>(undefined)
+
+  const passengerLabel = passengers === 1 ? "traveler" : "travelers"
+
+  const adjustPassengers = (delta: number) => {
+    setPassengers((prev) => Math.max(1, prev + delta))
+  }
 
   const canSearch = Boolean(
     from &&
@@ -38,176 +50,257 @@ export default function LandingPageForm({ tripType, setTripType, handleSearch }:
   )
 
   return (
-    <div className="relative z-10 h-screen flex flex-col">
-      {/* Header */}
-      <header className="flex h-16 w-full items-center justify-between px-4 md:px-6 border-b-2">
-        <Link className="flex items-center gap-2 text-lg font-semibold md:text-base" href="/">
+    <div className="relative z-10 flex min-h-screen flex-col">
+      <header className="flex items-center justify-between px-6 py-6">
+        <Link className="flex items-center gap-2 text-lg font-semibold text-slate-900" href="/">
           <Plane className="h-6 w-6" />
           <span className="sr-only">Stopover</span>
           <span>Stopover</span>
         </Link>
+        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-500 md:flex">
+          <span className="text-slate-900">Flights</span>
+          <span>Hotels</span>
+          <span>Support</span>
+        </nav>
+        <div className="hidden items-center gap-3 md:flex">
+          <button className="rounded-full border border-white/70 bg-white/60 px-4 py-2 text-sm font-medium text-slate-600 shadow-sm backdrop-blur transition hover:border-slate-200 hover:text-slate-900">
+            Sign in
+          </button>
+          <button className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700">
+            Create account
+          </button>
+        </div>
       </header>
 
-      {/* Form centered in the page */}
-      <div className="flex-grow flex items-center justify-center container mx-auto px-4 md:px-8">
-        {/* Booking form - centered with slightly reduced width */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden max-w-5xl w-full mx-auto">
-          <div className="p-4 md:p-6">
-            {/* Trip type selector */}
-            <div className="grid grid-cols-3 gap-2 mb-4 max-w-md mx-auto">
-              <button
-                className={`py-2 text-center rounded-lg ${tripType === "one-way" ? "bg-gray-100 font-medium" : "text-gray-500"}`}
-                onClick={() => setTripType("one-way")}
-              >
-                One way
-              </button>
-              <button
-                className={`py-2 text-center rounded-lg ${tripType === "round-trip" ? "bg-gray-100 font-medium" : "text-gray-500"}`}
-                onClick={() => setTripType("round-trip")}
-              >
-                Round trip
-              </button>
-              <button
-                className={`py-2 text-center rounded-lg ${tripType === "multi-city" ? "bg-gray-100 font-medium" : "text-gray-500"}`}
-                onClick={() => setTripType("multi-city")}
-              >
-                Multi city
-              </button>
-            </div>
+      <main className="flex flex-1 items-center">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 pb-16 pt-6 lg:flex-row lg:items-start lg:gap-16">
+          <section className="max-w-xl space-y-6 text-slate-900">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-slate-500 shadow-sm backdrop-blur">
+              Smart travel
+            </span>
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+              Plan your next flight with confidence
+            </h1>
+            <p className="text-base text-slate-600 sm:text-lg">
+              Stopover combines trusted carriers, flexible fares, and curated itineraries so your journey feels effortless from the moment you start searching.
+            </p>
+            <ul className="space-y-3 text-sm text-slate-600">
+              <li className="flex items-start gap-3">
+                <span className="mt-1 rounded-full bg-lime-200/70 p-1 text-slate-900">
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+                Transparent pricing with real-time availability.
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 rounded-full bg-lime-200/70 p-1 text-slate-900">
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+                Tailored recommendations based on your preferences.
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 rounded-full bg-lime-200/70 p-1 text-slate-900">
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+                Dedicated support available any time you need help.
+              </li>
+            </ul>
+          </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              {/* From section */}
-              <div className="lg:col-span-1">
-                <AirportSelect label="From" value={from} onChange={setFrom} placeholder="City or airport" />
-              </div>
-
-              {/* To section */}
-              <div className="bg-lime-100 p-3 rounded-xl lg:col-span-1">
-                <AirportSelect label="To" value={to} onChange={setTo} placeholder="City or airport" />
-              </div>
-
-              {/* Travel dates */}
-              <div className="lg:col-span-1">
-                <div className="text-xs text-gray-500 mb-2">DEPARTURE</div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="w-full flex items-center justify-start border border-gray-200 rounded-lg p-2 text-left"
-                    >
-                      <CalendarIcon size={16} className="text-gray-400 mr-2" />
-                      <span className="text-sm">
-                        {departureDate ? departureDate.toLocaleDateString() : "Select date"}
-                      </span>
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={departureDate}
-                      onSelect={(date) => setDepartureDate(date)}
-                      disabled={(date) => {
-                        const today = new Date();
-                        today.setHours(0,0,0,0)
-                        return date < today
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="lg:col-span-1">
-                <div className="text-xs text-gray-500 mb-2">RETURN</div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      disabled={tripType !== "round-trip"}
-                      className={`w-full flex items-center justify-start border border-gray-200 rounded-lg p-2 text-left ${tripType !== "round-trip" ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      <CalendarIcon size={16} className="text-gray-400 mr-2" />
-                      <span className="text-sm">
-                        {returnDate ? returnDate.toLocaleDateString() : tripType === "round-trip" ? "Select date" : "N/A for one-way"}
-                      </span>
-                    </button>
-                  </PopoverTrigger>
-                  {tripType === "round-trip" && (
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={returnDate}
-                        onSelect={(date) => setReturnDate(date)}
-                        disabled={(date) => {
-                          const minDate = departureDate ? new Date(departureDate) : new Date()
-                          minDate.setHours(0,0,0,0)
-                          return date < minDate
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  )}
-                </Popover>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              {/* Passengers */}
-              <div className="lg:col-span-2">
-                <div className="text-xs text-gray-500 mb-2">PASSENGERS</div>
-                <div className="flex justify-between items-center border border-gray-200 rounded-lg p-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={1}
-                      value={passengers}
-                      onChange={(e) => setPassengers(Math.max(1, Number(e.target.value || 1)))}
-                      className="w-20 border border-gray-200 rounded px-2 py-1 text-sm"
-                    />
-                    <span className="text-sm">traveler(s)</span>
+          <section className="w-full lg:max-w-3xl">
+            <div className="rounded-3xl border border-white/60 bg-white/80 shadow-2xl backdrop-blur">
+              <div className="border-b border-white/60 px-6 pb-6 pt-8">
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium uppercase tracking-[0.3em] text-slate-400">Book</p>
+                    <h2 className="mt-2 text-2xl font-semibold text-slate-900">Flight itinerary</h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Complete the details below to discover the best fares.
+                    </p>
                   </div>
-                  <ChevronDown size={16} className="text-gray-400" />
+                  <div className="inline-flex items-center gap-1 rounded-full bg-slate-100 p-1 text-sm font-medium text-slate-500">
+                    {tripTypeOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setTripType(option.id)}
+                        className={`rounded-full px-4 py-2 text-sm transition ${
+                          tripType === option.id
+                            ? "bg-white text-slate-900 shadow"
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Flexible dates */}
-              <div className="flex items-center lg:col-span-1">
-                <Checkbox id="flexible" className="mr-2" />
-                <label htmlFor="flexible" className="text-sm">
-                  My dates are flexible (+/- days)
-                </label>
-              </div>
+              <div className="space-y-6 px-6 py-8">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <AirportSelect label="From" value={from} onChange={setFrom} placeholder="City or airport" />
+                  <AirportSelect label="To" value={to} onChange={setTo} placeholder="City or airport" />
+                </div>
 
-              {/* Search button */}
-              <div className="lg:col-span-1">
-                <button
-                  className="w-full bg-black text-white py-3 rounded-full font-medium disabled:opacity-50"
-                  onClick={() => {
-                    if (!from || !to || !departureDate) return
-                    const fmt = (d: Date) => {
-                      const y = d.getFullYear()
-                      const m = String(d.getMonth() + 1).padStart(2, '0')
-                      const day = String(d.getDate()).padStart(2, '0')
-                      return `${y}-${m}-${day}`
-                    }
-                    handleSearch({
-                      origin: from.code,
-                      destination: to.code,
-                      passengers,
-                      departure: fmt(departureDate),
-                      returnDate: tripType === 'round-trip' && returnDate ? fmt(returnDate) : undefined,
-                      tripType,
-                    })
-                  }}
-                  disabled={!canSearch}
-                >
-                  Search Flight
-                </button>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Departure</p>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="mt-2 flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                        >
+                          <span className="flex items-center gap-3">
+                            <span className="rounded-lg bg-slate-900/90 p-2">
+                              <CalendarIcon size={16} className="text-white" />
+                            </span>
+                            <span className="text-slate-700">
+                              {departureDate ? departureDate.toLocaleDateString() : "Select date"}
+                            </span>
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto rounded-xl border border-slate-200 bg-white p-0 shadow-lg" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={departureDate}
+                          onSelect={(date) => setDepartureDate(date)}
+                          disabled={(date) => {
+                            const today = new Date()
+                            today.setHours(0, 0, 0, 0)
+                            return date < today
+                          }}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Return</p>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={tripType !== "round-trip"}
+                          aria-disabled={tripType !== "round-trip"}
+                          className={`mt-2 flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-slate-900/10 ${
+                            tripType !== "round-trip"
+                              ? "cursor-not-allowed text-slate-400 opacity-60"
+                              : "text-slate-600 hover:border-slate-300"
+                          }`}
+                        >
+                          <span className="flex items-center gap-3">
+                            <span className="rounded-lg bg-slate-900/90 p-2">
+                              <CalendarIcon size={16} className="text-white" />
+                            </span>
+                            <span>
+                              {returnDate
+                                ? returnDate.toLocaleDateString()
+                                : tripType === "round-trip"
+                                ? "Select date"
+                                : "Not required"}
+                            </span>
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      {tripType === "round-trip" && (
+                        <PopoverContent className="w-auto rounded-xl border border-slate-200 bg-white p-0 shadow-lg" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={returnDate}
+                            onSelect={(date) => setReturnDate(date)}
+                            disabled={(date) => {
+                              const minDate = departureDate ? new Date(departureDate) : new Date()
+                              minDate.setHours(0, 0, 0, 0)
+                              return date < minDate
+                            }}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      )}
+                    </Popover>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Passengers</p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-lg font-semibold text-slate-900">{passengers}</p>
+                        <p className="text-sm text-slate-500">{passengerLabel}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => adjustPassengers(-1)}
+                          className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+                          aria-label="Decrease passengers"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <div className="flex h-10 w-14 items-center justify-center rounded-full bg-slate-900/5 text-sm font-semibold text-slate-900">
+                          {passengers}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => adjustPassengers(1)}
+                          className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white transition hover:bg-slate-700"
+                          aria-label="Increase passengers"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <label htmlFor="flexible" className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Flexibility
+                    </label>
+                    <div className="mt-3 flex items-start gap-3 text-sm text-slate-600">
+                      <Checkbox id="flexible" className="mt-0.5" />
+                      <span>My dates are flexible (± 4 days)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-slate-500">
+                    Secure checkout powered by leading global airlines and agency partners.
+                  </p>
+                  <button
+                    type="button"
+                    className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={() => {
+                      if (!from || !to || !departureDate) return
+                      const fmt = (d: Date) => {
+                        const y = d.getFullYear()
+                        const m = String(d.getMonth() + 1).padStart(2, "0")
+                        const day = String(d.getDate()).padStart(2, "0")
+                        return `${y}-${m}-${day}`
+                      }
+                      handleSearch({
+                        origin: from.code,
+                        destination: to.code,
+                        passengers,
+                        departure: fmt(departureDate),
+                        returnDate: tripType === "round-trip" && returnDate ? fmt(returnDate) : undefined,
+                        tripType,
+                      })
+                    }}
+                    disabled={!canSearch}
+                  >
+                    Search flights
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
