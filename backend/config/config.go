@@ -35,7 +35,8 @@ var AppConfig Config
 
 func LoadConfig() {
 
-	viper.SetConfigFile("C:/Users/npnirmal/Workspace/Codebase/Projects/github.com/Final/stopover/backend\.env")
+	// viper.SetConfigFile("C:/Users/npnirmal/Workspace/Codebase/Projects/github.com/Final/stopover/backend/.env")
+	viper.SetConfigFile("C:/Users/npnirmal/Workspace/Codebase/Projects/github.com/Final/stopover/backend/.env")
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
