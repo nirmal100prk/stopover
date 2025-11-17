@@ -12,7 +12,8 @@ import (
 	"stopover.backend/config"
 	"stopover.backend/internal/api/handler"
 	"stopover.backend/internal/api/route"
-	"stopover.backend/internal/repository"
+
+	// "stopover.backend/internal/repository"
 	"stopover.backend/pkg/aviasales"
 
 	// _ "github.com/golang-migrate/migrate/v4/source/file"
@@ -27,11 +28,11 @@ func StartServer() {
 	rootCtx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 
-	// init postgres db
-	dbConn, err := repository.NewPostgres(context.Background(), cfg)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	// // init postgres db
+	// dbConn, err := repository.NewPostgres(context.Background(), cfg)
+	// if err != nil {
+	// 	log.Fatal(err.Error())
+	// }
 
 	fClient := aviasales.NewFlightIntegrationClient(cfg.AviaSalesConfig.AviaSalesToken,
 		cfg.AviaSalesConfig.AviaSalesMarker,
@@ -48,7 +49,7 @@ func StartServer() {
 	// Start the server
 	startHttpServer(srv)
 
-	initGracefulShutdown(cancelFunc, dbConn, srv)
+	// initGracefulShutdown(cancelFunc, dbConn, srv)
 	<-rootCtx.Done()
 }
 
